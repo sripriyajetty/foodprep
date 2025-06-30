@@ -51,19 +51,52 @@ const placeOrder = async(req,res)=>{
 }
 
 const verifyOrder = async(req,res)=>{
+    
     const {orderId,success}=req.body;
+    console.log(req.body)
     try {
         if(success==="true"){
             await orderModel.findByIdAndUpdate(orderId,{payment:true})
             res.json({"message":"Payment successful"})
         }
-        else
-          await orderModel.findByIdAndDelete(orderId)
-          res.json({"message":"Not paid"})
+        else{
+            await orderModel.findByIdAndDelete(orderId)
+            res.json({"message":"Not paid"})
+        }
+          
     } catch (error) {
         console.log(error)
         res.json({"message":error.message})
     }
 }
 
-module.exports={placeOrder}
+const userOrders = async(req,res)=>{
+    try {
+        const orders = await orderModel.find({userId:req.userId})
+        res.status(200).json({data:orders})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({"message":"Internal server error"})
+    }
+}
+const listOrders = async(req,res)=>{
+    try {
+        const orders = await orderModel.find()
+        res.json({data:orders})
+    } catch (error) {
+        console.log(error)
+        res.json({"message":error.message})
+    }
+}
+
+const updateStatus = async(req,res)=>{
+    try {
+        await orderModel.findByIdAndUpdate(req.body.orderId,{status:req.body.status})
+        res.json({"message":"status updated"})
+    } catch (error) {
+        console.log(error)
+        res.json({"message":error.message})
+    }
+}
+
+module.exports={placeOrder,verifyOrder,userOrders,listOrders,updateStatus}
